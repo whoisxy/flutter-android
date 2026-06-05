@@ -46,8 +46,11 @@ jobs:
           export PATH="$(pwd)/depot_tools:$PATH"
           
           # Initialize gclient
-          gclient config --spec 'solutions = [{"name": "src/flutter", "url": ".", "managed": False, "custom_deps": {}}]'
-          gclient sync
+          gclient config --spec 'solutions = [{"name": "src/flutter", "url": "https://github.com/whoisxy/flutter-android.git", "managed": True}]'
+          gclient sync --revision src/flutter@${{ inputs.engine_commit }}
+          
+          #gclient config --spec 'solutions = [{"name": "src/flutter", "url": ".", "managed": False, "custom_deps": {}}]'
+          #gclient sync
           
           # Generate and build
           gn gen out/host_release --args='is_debug=false target_cpu="arm64" is_official_build=true enable_lto=false'
