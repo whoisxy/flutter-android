@@ -27,19 +27,21 @@ jobs:
           git clone https://github.com/whoisxy/flutter-android engine
           cd engine
           git checkout ${{ inputs.engine_commit }}
-
-      - name: Setup GN
+    
+      - name: Setup depot_tools and GN
         run: |
-          cd engine
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
           export PATH="$PATH:$(pwd)/depot_tools"
-          ./flutter/tools/gn --unoptimized
+          # Ensure gn is available
+          which gn || (cd depot_tools && python3 download_from_google_storage.py -b chromium-gn -s gn.sha1 && chmod +x gn)
+          cd engine
+          ../gn --unoptimized
 
       - name: Build gen_snapshot
         run: |
-          cd engine
           export PATH="$PATH:$(pwd)/depot_tools"
-          gn gen out/host_release --args='is_debug=false target_cpu="arm64"'
+          cd engine
+          ../gn gen out/host_release --args='is_debug=false target_cpu="arm64"'
           ninja -C out/host_release gen_snapshot
 
       - name: Package artifacts
