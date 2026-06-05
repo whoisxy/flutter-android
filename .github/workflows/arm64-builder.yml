@@ -32,10 +32,11 @@ jobs:
         run: |
           git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
           export PATH="$PATH:$(pwd)/depot_tools"
+          python3 depot_tools/bootstrap.py
           # Ensure gn is available
-          which gn || (cd depot_tools && python3 download_from_google_storage.py -b chromium-gn -s gn.sha1 && chmod +x gn)
-          cd engine
-          gn --unoptimized
+          #which gn || (cd depot_tools && python3 download_from_google_storage.py -b chromium-gn -s gn.sha1 && chmod +x gn)
+          #cd engine
+          #gn --unoptimized
 
       - name: Build gen_snapshot
         run: |
