@@ -1,0 +1,61 @@
+name: Build Flutter Engine for arm64
+
+on:
+  workflow_dispatch:
+    inputs:
+      engine_commit:
+        description: 'Flutter engine commit/tag to build'
+        required: true
+        type: string
+      flutter_version:
+        description: 'Flutter version label (e.g., 3.16.0)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      # Use an arm64 container or cross-compile setup
+      image: arm64v8/ubuntu:22.04
+    
+    steps:
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y git ninja-build pkg-config libssl-dev clang cmake curl
+
+      - name: Clone Flutter engine
+        run: |
+          git clone https://github.com/flutter/engine.git
+          cd engine
+          git checkout ${{ inputs.engine_commit }}
+
+      - name: Setup GN
+        run: |
+          cd engine
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          export PATH="$PATH:$(pwd)/depot_tools"
+          ./flutter/tools/gn --unoptimized
+
+      - name: Build gen_snapshot
+        run: |
+          cd engine
+          export PATH="$PATH:$(pwd)/depot_tools"
+          gn gen out/host_release --args='is_debug=false target_cpu="arm64"'
+          ninja -C out/host_release gen_snapshot
+
+      - name: Package artifacts
+        run: |
+          cd engine
+          mkdir -p artifacts/linux-arm64-release
+          cp out/host_release/gen_snapshot artifacts/linux-arm64-release/
+          chmod +x artifacts/linux-arm64-release/gen_snapshot
+          tar -czf gen_snapshot-linux-arm64-${{ inputs.flutter_version }}.tar.gz -C artifacts linux-arm64-release/
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: engine-${{ inputs.flutter_version }}
+          files: engine/gen_snapshot-linux-arm64-${{ inputs.flutter_version }}.tar.gz
+          token: ${{ secrets.GITHUB_TOKEN }}
