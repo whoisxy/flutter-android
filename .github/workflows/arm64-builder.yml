@@ -15,9 +15,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      # Use an arm64 container or cross-compile setup
-      image: arm64v8/ubuntu:22.04
     
     steps:
       - name: Install dependencies
