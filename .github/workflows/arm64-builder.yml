@@ -24,7 +24,7 @@ jobs:
 
       - name: Clone Flutter engine
         run: |
-          git clone https://github.com/whoisxy/flutter-android
+          git clone https://github.com/whoisxy/flutter-android engine
           cd engine
           git checkout ${{ inputs.engine_commit }}
 
